@@ -14,7 +14,8 @@ CAMERA_WIDTH = 375
 CAMERA_HEIGHT = 400
 TIME_LIMIT = 300  # 制限時間 (秒)
 GOAL_Y = 30000.0  # ゴールとなるマップのY座標 (下から30,000ピクセル)
-ZOOM_OUT_SCALE = 0.7  # ズームアウト時の倍率 (1.0が標準、0.7は直径約1.4倍の範囲表示)
+ZOOM_OUT_SCALE = 0.7  # ズームアウト時の目標倍率 (1.0が標準)
+ZOOM_SMOOTHING = 0.1  # ズーム率変更の滑らかさ
 
 # --- ゲーム画面初期化 ---
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -114,12 +115,13 @@ class Player:
     else:
       self.wind_channel.set_volume(0.0)
 
+    # 🌟 プレイヤーの向きロジック (ムーンウォーク状態)を維持 🌟
     if keys[control_map['left']]:
       self.vx -= accel
-      self.facing_right = False
+      self.facing_right = True  # 左移動で右向き
     elif keys[control_map['right']]:
       self.vx += accel
-      self.facing_right = True
+      self.facing_right = False  # 右移動で左向き
     else:
       if self.vx > 0:
         self.vx = max(0, self.vx - accel)
@@ -251,6 +253,21 @@ class Camera:
 
 # --- 関数群 ---
 
+def draw_text_border(surface, text, font, color, border_color, x, y, border_size=1):
+  """袋文字を描画するヘルパー関数"""
+
+  # 縁取りを描画 (外側)
+  for dx in range(-border_size, border_size + 1):
+    for dy in range(-border_size, border_size + 1):
+      if dx != 0 or dy != 0:
+        border_surface = font.render(text, True, border_color)
+        surface.blit(border_surface, (x + dx, y + dy))
+
+  # 本体を描画 (内側)
+  text_surface = font.render(text, True, color)
+  surface.blit(text_surface, (x, y))
+
+
 def switch_bgm(target, current_bgm):
   """BGMを共通で切り替える (pygame.mixer.musicを使用)"""
   if target != current_bgm:
@@ -261,7 +278,6 @@ def switch_bgm(target, current_bgm):
 
       # BGMファイル名が正しい前提
       if target == "original":
-        # ファイルが存在すればロードと再生
         pygame.mixer.music.load("The Dark Eternal Night.mp3")
       elif target == "mid":
         pygame.mixer.music.load("zanzou no hiyu.mp3")
@@ -271,13 +287,11 @@ def switch_bgm(target, current_bgm):
       pygame.mixer.music.play(-1, fade_ms=2000)
       return target
     except Exception as e:
-      # 音楽ファイルのロードに失敗した場合のエラーメッセージを出力
-      # BGMが流れない場合、ファイル名かパスを確認してください。
       print(f"[ERROR] Failed to load/play BGM: {e}")
       return current_bgm
   return current_bgm
 
-def draw_overview_map(main_surface, player1, player2, camera2, ow_width, ow_height, map_w, map_h, font):
+def draw_overview_map(main_surface, player1, player2, camera2, ow_width, ow_height, map_w, map_h, font, overview_rect):
   """全体マップ（オーバービュー）を描画するヘルパー関数"""
 
   overview_surface = pygame.Surface(
@@ -285,8 +299,6 @@ def draw_overview_map(main_surface, player1, player2, camera2, ow_width, ow_heig
   overview_surface.set_alpha(200)
 
   overview_surface.blit(map_overview, (0, 0))
-
-  overview_rect = overview_surface.get_rect(topright=(SCREEN_WIDTH - 10, 10))
   main_surface.blit(overview_surface, overview_rect)
 
   pygame.draw.rect(main_surface, (255, 255, 255), overview_rect, 2)
@@ -294,20 +306,30 @@ def draw_overview_map(main_surface, player1, player2, camera2, ow_width, ow_heig
   scale_x = ow_width / map_w
   scale_y = ow_height / map_h
 
-  # 1Pの位置を青色で表示
+  PLAYER_DOT_RADIUS = 4
+  PLAYER_BORDER_RADIUS = 6
+  BORDER_COLOR = (255, 215, 0)  # 金色
+
+  # --- 1Pの位置を赤色 (外枠: 金色)で表示 ---
   player1_dot_x = int(player1.x * scale_x)
   player1_dot_y = int((map_h - player1.y) * scale_y)
   dot_pos1 = (overview_rect.left + player1_dot_x,
               overview_rect.top + player1_dot_y)
-  pygame.draw.circle(main_surface, (0, 0, 255), dot_pos1, 4)  # 青色 (1P)
 
-  # 2Pの位置を赤色で表示
+  pygame.draw.circle(main_surface, BORDER_COLOR,
+                     dot_pos1, PLAYER_BORDER_RADIUS)
+  pygame.draw.circle(main_surface, (255, 0, 0), dot_pos1,
+                     PLAYER_DOT_RADIUS)  # 赤色 (1P)
+
+  # --- 2Pの位置を青色 (外枠: 金色)で表示 ---
   player2_dot_x = int(player2.x * scale_x)
   player2_dot_y = int((map_h - player2.y) * scale_y)
   dot_pos2 = (overview_rect.left + player2_dot_x,
               overview_rect.top + player2_dot_y)
-  pygame.draw.circle(main_surface, (255, 0, 0), dot_pos2, 4)  # 赤色 (2P)
-
+  pygame.draw.circle(main_surface, BORDER_COLOR,
+                     dot_pos2, PLAYER_BORDER_RADIUS)
+  pygame.draw.circle(main_surface, (0, 0, 255), dot_pos2,
+                     PLAYER_DOT_RADIUS)  # 青色 (2P)
   # ゴールラインを描画
   goal_y_on_map = map_h - GOAL_Y
   goal_line_y = int(goal_y_on_map * scale_y)
@@ -321,29 +343,7 @@ def draw_overview_map(main_surface, player1, player2, camera2, ow_width, ow_heig
 
     text_goal = font.render("GOAL", True, (255, 255, 0))
     main_surface.blit(text_goal, (overview_rect.left,
-                      line_y_pos - text_goal.get_height() - 2))
-
-  # カメラ範囲を黄色で表示 (2Pのカメラ位置)
-  cam_view_w = camera2.CAMERA_WIDTH / \
-      ZOOM_OUT_SCALE if player2.is_zooming_out else camera2.CAMERA_WIDTH
-  cam_view_h = camera2.CAMERA_HEIGHT / \
-      ZOOM_OUT_SCALE if player2.is_zooming_out else camera2.CAMERA_HEIGHT
-
-  cam_rect_x = camera2.x
-  cam_rect_y = camera2.y
-
-  overview_cam_x = int(cam_rect_x * scale_x)
-  overview_cam_y = int((map_h - cam_rect_y - cam_view_h) * scale_y)
-  overview_cam_w = int(cam_view_w * scale_x)
-  overview_cam_h = int(cam_view_h * scale_y)
-
-  cam_rect_on_overview = pygame.Rect(
-      overview_rect.left + overview_cam_x,
-      overview_rect.top + overview_cam_y,
-      overview_cam_w,
-      overview_cam_h
-  )
-  pygame.draw.rect(main_surface, (255, 255, 0), cam_rect_on_overview, 1)
+                                  line_y_pos - text_goal.get_height() - 2))
 
 def draw_game_view(surface, player, camera, cam_width, cam_height, zoom_scale, player_label, font, time_text=None):
   """個別のゲーム画面を描画するヘルパー関数"""
@@ -355,7 +355,6 @@ def draw_game_view(surface, player, camera, cam_width, cam_height, zoom_scale, p
   rect_y = MAP_HEIGHT - int(camera.y) - display_height
 
   camera_rect = pygame.Rect(rect_x, rect_y, display_width, display_height)
-
   camera_rect.clamp_ip(pygame.Rect(0, 0, MAP_WIDTH, MAP_HEIGHT))
 
   sub_map = map_image.subsurface(camera_rect)
@@ -367,20 +366,23 @@ def draw_game_view(surface, player, camera, cam_width, cam_height, zoom_scale, p
   player.draw(surface, camera.x, camera.y,
               surface.get_width(), surface.get_height(), display_width, display_height, zoom_scale)
 
-  text_color = (0, 255, 0) if player.is_goal else (255, 255, 255)
-  text_label = font.render(player_label, True, text_color)
-  surface.blit(text_label, (10, 10))
+  # プレイヤーラベルを袋文字で表示
+  player_id_color = (255, 0, 0) if player.player_id == 1 else (0, 0, 255)
 
+  draw_text_border(surface, player_label, font, player_id_color,
+                   (255, 255, 255), 10, 10, border_size=2)
+
+  # 🌟 修正: プレイヤー座標を整数のみで表示 🌟
   text_pos = font.render(
-      f"Pos: ({player.x:.1f}, {player.y:.1f})", True, (255, 255, 255))
+      f"Pos: ({int(player.x)}, {int(player.y)})", True, (255, 255, 255))
   surface.blit(text_pos, (surface.get_width() -
-               text_pos.get_width() - 10, 10))
+                          text_pos.get_width() - 10, 10))
 
   # 1P画面の右上に赤色でタイマーを表示
   if time_text and player.player_id == 1:
     timer_text_render = font.render(time_text, True, (255, 0, 0))
     surface.blit(timer_text_render, (surface.get_width() -
-                 timer_text_render.get_width() - 10, 50))
+                                     timer_text_render.get_width() - 10, 50))
 
 
 def draw_end_screen(surface, message, font):
@@ -394,9 +396,6 @@ def draw_end_screen(surface, message, font):
   time.sleep(3)
 
 # --- メイン ---
-# メインループの前に
-current_bgm = switch_bgm("original", "")
-
 def main():
 
   player1 = Player(1, image_right, image_left, 2800.0,
@@ -405,7 +404,13 @@ def main():
                    CHANNEL_P2_SFX, CHANNEL_P2_WIND)
   camera1 = Camera(CAMERA_WIDTH, CAMERA_HEIGHT)
   camera2 = Camera(CAMERA_WIDTH, CAMERA_HEIGHT)
-  highest_y = 10000
+
+  current_zoom_p1 = 1.0
+  current_zoom_p2 = 1.0
+
+  # フロアマップ表示フラグ (初期値: True)
+  show_overview_map = True
+
   control_map_p1 = {
       'left': pygame.K_a, 'right': pygame.K_d, 'jump': pygame.K_w, 'zoom_out': pygame.K_r
   }
@@ -419,21 +424,23 @@ def main():
   SCREEN_SURFACE_P2 = screen.subsurface(pygame.Rect(
       HALF_SCREEN_WIDTH, 0, HALF_SCREEN_WIDTH, SCREEN_HEIGHT))
 
-  current_bgm = "original"
-  # BGM再生を試行
+  current_bgm = ""
   current_bgm = switch_bgm("original", current_bgm)
 
   running = True
   game_over = False
   game_start_time = time.time()
-  smoothing = 0.15
+  camera_smoothing = 0.15
 
   font = pygame.font.SysFont(None, 36)
+
+  # フロアマップの位置を右上に設定
+  overview_rect = pygame.Rect(0, 0, overview_width, overview_height)
+  overview_rect.topright = (SCREEN_WIDTH - 10, 10)
 
   while running:
     clock.tick(FPS)
 
-    # 🌟 修正: timer_textの計算をループの先頭に移動 🌟
     current_time = time.time()
     elapsed_time = current_time - game_start_time
     remaining_time = max(0, TIME_LIMIT - elapsed_time)
@@ -444,6 +451,11 @@ def main():
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
         running = False
+
+      # Mキーでフロアマップの表示/非表示を切り替え
+      if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_m:
+          show_overview_map = not show_overview_map
 
     if not game_over:
       # --- 更新処理 ---
@@ -459,12 +471,18 @@ def main():
       else:
         current_bgm = switch_bgm("high", current_bgm)
 
-      # カメラ位置の更新
-      zoom_p1 = ZOOM_OUT_SCALE if player1.is_zooming_out else 1.0
-      camera1.update(player1, smoothing, zoom_p1)
+      # スムーズなズーム率の計算
+      target_zoom_p1 = ZOOM_OUT_SCALE if player1.is_zooming_out else 1.0
+      current_zoom_p1 += (target_zoom_p1 -
+                          current_zoom_p1) * ZOOM_SMOOTHING
 
-      zoom_p2 = ZOOM_OUT_SCALE if player2.is_zooming_out else 1.0
-      camera2.update(player2, smoothing, zoom_p2)
+      target_zoom_p2 = ZOOM_OUT_SCALE if player2.is_zooming_out else 1.0
+      current_zoom_p2 += (target_zoom_p2 -
+                          current_zoom_p2) * ZOOM_SMOOTHING
+
+      # カメラ位置の更新
+      camera1.update(player1, camera_smoothing, current_zoom_p1)
+      camera2.update(player2, camera_smoothing, current_zoom_p2)
 
       # --- ゲーム終了判定 ---
       if remaining_time <= 0:
@@ -484,21 +502,22 @@ def main():
       # --- 描画処理 ---
       screen.fill((0, 0, 0))
 
-      # 1P 画面の描画 (timer_textを渡す)
+      # 1P 画面の描画
       draw_game_view(SCREEN_SURFACE_P1, player1, camera1, CAMERA_WIDTH,
-                     CAMERA_HEIGHT, zoom_p1, "1P", font, timer_text)
+                     CAMERA_HEIGHT, current_zoom_p1, "1P", font, timer_text)
 
-      # 2P 画面の描画 (timer_textは渡さない)
+      # 2P 画面の描画
       draw_game_view(SCREEN_SURFACE_P2, player2, camera2,
-                     CAMERA_WIDTH, CAMERA_HEIGHT, zoom_p2, "2P", font)
+                     CAMERA_WIDTH, CAMERA_HEIGHT, current_zoom_p2, "2P", font)
 
-      # 分割線の描画 (黒色)
+      # 分割線を描画
       pygame.draw.line(screen, (0, 0, 0), (HALF_SCREEN_WIDTH, 0),
                        (HALF_SCREEN_WIDTH, SCREEN_HEIGHT), 3)
 
-      # 全体マップの描画 (1Pと2Pの情報を渡す)
-      draw_overview_map(screen, player1, player2, camera2,
-                        overview_width, overview_height, MAP_WIDTH, MAP_HEIGHT, font)
+      # フロアマップ表示フラグに応じて描画
+      if show_overview_map:
+        draw_overview_map(screen, player1, player2, camera2,
+                          overview_width, overview_height, MAP_WIDTH, MAP_HEIGHT, font, overview_rect)
 
     else:
       # ゲーム終了後の処理
