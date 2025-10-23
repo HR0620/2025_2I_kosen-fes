@@ -17,6 +17,11 @@ GOAL_Y = 30000.0  # ゴールとなるマップのY座標 (下から30,000ピク
 ZOOM_OUT_SCALE = 0.7  # ズームアウト時の目標倍率 (1.0が標準)
 ZOOM_SMOOTHING = 0.1  # ズーム率変更の滑らかさ
 
+PNG_PATH = "./png/"
+BGM_PATH = "./mp3/bgm/"
+EFFECT_PATH = "./mp3/effect/"
+VOICE_PATH = "./mp3/voice/"
+
 # --- ゲーム画面初期化 ---
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("OnlyUp風ゲーム (2P Split Screen)")
@@ -24,7 +29,7 @@ clock = pygame.time.Clock()
 
 # --- マップ画像読み込み ---
 try:
-  map_image = pygame.image.load("map_highres.png").convert_alpha()
+  map_image = pygame.image.load(f"{PNG_PATH}map_highres.png").convert_alpha()
 except pygame.error as e:
   print(f"Error loading map_highres.png: {e}. Please ensure the file exists.")
   pygame.quit()
@@ -34,11 +39,11 @@ MAP_WIDTH, MAP_HEIGHT = map_image.get_size()
 
 # --- サウンド設定とチャンネル分け ---
 try:
-  jump_sound = pygame.mixer.Sound("/mp3/effect/キックの素振り3.mp3")
-  blue_sound = pygame.mixer.Sound("/mp3/effect/ボヨン.mp3")
-  green_sound = pygame.mixer.Sound("/mp3/effect/爆発1.mp3")
-  fall_sound = pygame.mixer.Sound("/mp3/effect/ジャンプの着地.mp3")
-  wind_sound = pygame.mixer.Sound("/mp3/effect/Wind-Synthetic_Ambi01-1.mp3")
+  jump_sound = pygame.mixer.Sound(f"{EFFECT_PATH}キックの素振り3.mp3")
+  blue_sound = pygame.mixer.Sound(f"{EFFECT_PATH}ボヨン.mp3")
+  green_sound = pygame.mixer.Sound(f"{EFFECT_PATH}爆発1.mp3")
+  fall_sound = pygame.mixer.Sound(f"{EFFECT_PATH}ジャンプの着地.mp3")
+  wind_sound = pygame.mixer.Sound(f"{EFFECT_PATH}Wind-Synthetic_Ambi01-1.mp3")
 except pygame.error as e:
   print(
       f"Error loading sound files. Check file paths and formats: {e}. Some sounds may not play.")
@@ -57,7 +62,7 @@ CHANNEL_P2_WIND.set_volume(0.0)
 
 # --- 自機画像読み込み & 縮小 ---
 try:
-  original_image = pygame.image.load("/png/muroya.png").convert_alpha()
+  original_image = pygame.image.load(f"{PNG_PATH}muroya.png").convert_alpha()
 except pygame.error as e:
   print(f"Error loading muroya.png: {e}. Please ensure the file exists.")
   pygame.quit()
@@ -278,11 +283,11 @@ def switch_bgm(target, current_bgm):
 
       # BGMファイル名が正しい前提
       if target == "original":
-        pygame.mixer.music.load("The Dark Eternal Night.mp3")
+        pygame.mixer.music.load(f"{BGM_PATH}The Dark Eternal Night.mp3")
       elif target == "mid":
-        pygame.mixer.music.load("zanzou no hiyu.mp3")
+        pygame.mixer.music.load(f"{BGM_PATH}zanzou no hiyu.mp3")
       elif target == "high":
-        pygame.mixer.music.load("Outer Space.mp3")
+        pygame.mixer.music.load(f"{BGM_PATH}Outer Space.mp3")
 
       pygame.mixer.music.play(-1, fade_ms=2000)
       return target
