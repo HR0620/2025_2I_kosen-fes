@@ -34,11 +34,11 @@ MAP_WIDTH, MAP_HEIGHT = map_image.get_size()
 
 # --- サウンド設定とチャンネル分け ---
 try:
-  jump_sound = pygame.mixer.Sound("キックの素振り3.mp3")
-  blue_sound = pygame.mixer.Sound("ボヨン.mp3")
-  green_sound = pygame.mixer.Sound("爆発1.mp3")
-  fall_sound = pygame.mixer.Sound("ジャンプの着地.mp3")
-  wind_sound = pygame.mixer.Sound("Wind-Synthetic_Ambi01-1.mp3")
+  jump_sound = pygame.mixer.Sound("/mp3/effect/キックの素振り3.mp3")
+  blue_sound = pygame.mixer.Sound("/mp3/effect/ボヨン.mp3")
+  green_sound = pygame.mixer.Sound("/mp3/effect/爆発1.mp3")
+  fall_sound = pygame.mixer.Sound("/mp3/effect/ジャンプの着地.mp3")
+  wind_sound = pygame.mixer.Sound("/mp3/effect/Wind-Synthetic_Ambi01-1.mp3")
 except pygame.error as e:
   print(
       f"Error loading sound files. Check file paths and formats: {e}. Some sounds may not play.")
@@ -57,7 +57,7 @@ CHANNEL_P2_WIND.set_volume(0.0)
 
 # --- 自機画像読み込み & 縮小 ---
 try:
-  original_image = pygame.image.load("muroya.png").convert_alpha()
+  original_image = pygame.image.load("/png/muroya.png").convert_alpha()
 except pygame.error as e:
   print(f"Error loading muroya.png: {e}. Please ensure the file exists.")
   pygame.quit()
@@ -344,6 +344,7 @@ def draw_overview_map(main_surface, player1, player2, camera2, ow_width, ow_heig
     text_goal = font.render("GOAL", True, (255, 255, 0))
     main_surface.blit(text_goal, (overview_rect.left,
                                   line_y_pos - text_goal.get_height() - 2))
+
 
 def draw_game_view(surface, player, camera, cam_width, cam_height, zoom_scale, player_label, font, time_text=None):
   """個別のゲーム画面を描画するヘルパー関数"""
