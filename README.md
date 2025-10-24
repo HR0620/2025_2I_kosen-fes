@@ -53,13 +53,14 @@ python -m pip install -r requirements.txt
 - ¬ハッカソン
 
 ## 製作メンバー (GitHubアカウント)
-- 石田和磨 ([wakka810](https://github.com/wakka810))
-- 柿谷耕太郎 ([KKotaro0840](https://github.com/KKotaro0840))
-- 片山航志郎
-- 岸本浬 ([dddd145](https://github.com/dddd145))
-- 鈴木結愛 ([r24056](https://github.com/r24056))
-- 原田連寿 ([HR0620](https://github.com/HR0620))
-- 東達仁 ([tatsukodx](https://github.com/tatsukodx))
+- [監督]石田和磨 ([wakka810](https://github.com/wakka810))
+- [監督]柿谷耕太郎 ([KKotaro0840](https://github.com/KKotaro0840))
+- [監督]片山航志郎
+- [監督]岸本浬 ([dddd145](https://github.com/dddd145))
+- [資材調達等]鈴木結愛 ([r24056](https://github.com/r24056))
+- [リファクタリング]原田連寿 ([HR0620](https://github.com/HR0620))
+- [企画・設計]東達仁 ([tatsukodx](https://github.com/tatsukodx))
 
+- 
 ## ライセンス
 - 
