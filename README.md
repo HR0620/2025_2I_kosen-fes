@@ -59,8 +59,8 @@ python -m pip install -r requirements.txt
 - [監督]岸本浬 ([dddd145](https://github.com/dddd145))
 - [資材調達等]鈴木結愛 ([r24056](https://github.com/r24056))
 - [リファクタリング]原田連寿 ([HR0620](https://github.com/HR0620))
-- [企画・設計]東達仁 ([tatsukodx](https://github.com/tatsukodx))
+- [企画・設計、コーディング、イラスト]東達仁 ([tatsukodx](https://github.com/tatsukodx))
 
-- 
-## ライセンス
-- 
+## 協力
+- 音声提供、モデル : 室谷文祥 先生
+- コンテンツ提供 : 平林大介 先生
