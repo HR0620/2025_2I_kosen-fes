@@ -1,3 +1,4 @@
+import os
 import pygame
 import sys
 import math
@@ -24,7 +25,27 @@ IMAGE_PATH = "./hisayoshi/image"
 SOUND_PATH = "./hisayoshi/sound"
 BGM_PATH = f"{SOUND_PATH}/bgm"
 EFFECT_PATH = f"{SOUND_PATH}/effect"
-VOICE_PATH = f"{SOUND_PATH}/MP3"
+VOICE_PATH = f"{SOUND_PATH}/voice"
+
+def load_voice_files():
+  """hisayoshi/sound/voice フォルダ内の全てのmp3をロードして辞書で返す"""
+  voices = {}
+  if not os.path.exists(VOICE_PATH):
+    print(f"[WARNING] VOICE_PATH not found: {VOICE_PATH}")
+    return voices
+
+  for file in os.listdir(VOICE_PATH):
+    if file.lower().endswith(".mp3"):
+      name = os.path.splitext(file)[0]  # 例: 'areyouready'
+      full_path = os.path.join(VOICE_PATH, file)
+      try:
+        voices[name] = pygame.mixer.Sound(full_path)
+      except pygame.error as e:
+        print(f"[ERROR] Failed to load {file}: {e}")
+  print(f"[INFO] Loaded {len(voices)} voice files.")
+  return voices
+
+voice_dict = load_voice_files()
 
 # --- Game Screen Initialization ---
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -150,6 +171,9 @@ class Player:
         self.vy = self.jump_speed
         self.on_ground = False
         self.play_sound(jump_sound)
+        if "yoisho" in voice_dict:
+          voice_dict["yoisho"].play()
+
       elif self.wall_jump_cooldown == 0:
         if self.check_collision(self.x - 0.2, self.y) or self.check_collision(self.x + 0.2, self.y):
           self.vy = self.jump_speed * 0.8
@@ -159,6 +183,8 @@ class Player:
             self.vx = -self.speed * 0.7
           self.wall_jump_cooldown = 10
           self.play_sound(jump_sound)
+          if "yoisho" in voice_dict:
+            voice_dict["yoisho"].play()
 
     if self.wall_jump_cooldown > 0:
       self.wall_jump_cooldown -= 1
