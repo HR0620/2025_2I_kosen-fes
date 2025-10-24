@@ -14,12 +14,9 @@ game.py は（ここに簡潔な説明を入れる）
 - Python 3.8+
 - 依存ライブラリ（例）
     - pygame
-    - numpy
-
-インストール例:
-```bash
-python -m pip install -r requirements.txt
-```
+    - sys
+    - math
+    - time
 
 ## インストール
 1. リポジトリをクローン:
@@ -32,29 +29,10 @@ cd <プロジェクトフォルダ>
 python -m pip install -r requirements.txt
 ```
 
-## 実行方法
-基本的な実行:
-```bash
-python game.py
-```
-コマンドライン引数（例）:
-```bash
-python game.py --level 3 --fullscreen --seed 42
-```
-想定されるオプション例（実装に合わせて編集してください）:
-- `--level <n>`: 開始レベルを指定
-- `--fullscreen`: フルスクリーンで起動
-- `--width <px> --height <px>`: ウィンドウサイズ指定
-- `--debug`: デバッグモード
-
-## 設定ファイル
-- `config.yaml` または `settings.json` をサポートする場合、そのフォーマットと主なキーをここに記載（例: 解像度、音量、キー割当て）。
-
 ## コード構成（参考）
-- `game.py` — エントリポイント。引数解析とゲーム起動。
-- `engine/` — ゲームエンジン核心（ループ、レンダラー、入力）。
-- `scenes/` — 各シーン（Menu, Play, GameOver など）。
-- `assets/` — 画像・音声・フォント。
+- `game.py` — ゲーム起動。
+- `image/` — プレイヤーの画像と背景。
+- `sound/` — BGMと効果音、音声。
 
 主要関数・クラス（例: 実際の実装に合わせて編集）
 - `Game` クラス
@@ -64,27 +42,23 @@ python game.py --level 3 --fullscreen --seed 42
     - `update(dt)` — 状態更新
     - `render()` — 描画
 
-## 開発とテスト
-- 単体テスト: `tests/` に pytest などを配置
-- 実行例:
-```bash
-pytest
-```
-
 ## デバッグとトラブルシューティング
 - ウィンドウが開かない: 依存ライブラリのバージョンを確認
 - 画面がちらつく: vsync や FPS 制御の実装を確認
 - キー入力が効かない: フォーカスやイベントループを確認
 
-## 貢献
-- プルリク歓迎。変更前に Issue を立て、簡潔な説明を添えてください。
-- コーディング規約、テスト追加、ドキュメント更新をお願いします。
-
 ## ライセンス
 - LICENSE ファイルを参照（例: MIT License）
 
-## 作者 / 連絡先
-- 名前（ここに記載）
-- Email / GitHub
+# 作者 / 連絡先
+## 製作チーム
+- ¬ハッカソン
 
-（スクリーンショットやデモ GIF を追加すると分かりやすくなります）
+## 製作メンバー (GitHubアカウント)
+- 石田和磨 ([wakka810](https://github.com/wakka810))
+- 柿谷耕太郎 ([KKotaro0840](https://github.com/KKotaro0840))
+- 片山航志郎
+- 岸本浬 ([dddd145](https://github.com/dddd145))
+- 鈴木結愛 ([r24056](https://github.com/r24056))
+- 原田連寿 ([HR0620](https://github.com/HR0620))
+- 東達仁 ([tatsukodx](https://github.com/tatsukodx))
