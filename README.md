@@ -1,6 +1,6 @@
-# game.py — README
+# Hisayoshi　～星にあこがれて～
 
-## 概要
+## game.py
 game.py は（ここに簡潔な説明を入れる）  
 例：シンプルな2Dゲームのエントリポイントで、ゲームループ・入力処理・レンダリングを行います。
 
@@ -48,9 +48,6 @@ python -m pip install -r requirements.txt
 - 画面がちらつく: vsync や FPS 制御の実装を確認
 - キー入力が効かない: フォーカスやイベントループを確認
 
-## ライセンス
-- 
-
 # 作者 / 連絡先
 ## 製作チーム
 - ¬ハッカソン
@@ -63,3 +60,6 @@ python -m pip install -r requirements.txt
 - 鈴木結愛 ([r24056](https://github.com/r24056))
 - 原田連寿 ([HR0620](https://github.com/HR0620))
 - 東達仁 ([tatsukodx](https://github.com/tatsukodx))
+
+## ライセンス
+- 
